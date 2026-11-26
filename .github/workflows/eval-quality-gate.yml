@@ -1,0 +1,36 @@
+# Exercise 7.3 — Quality gate: chặn merge khi eval tụt accuracy hoặc có regression.
+# run_eval.py trả exit code 1 khi accuracy < --min-accuracy hoặc có câu regression so với baseline,
+# nên step "Quality gate" fail → job fail → branch protection (required check) chặn nút Merge.
+name: eval-quality-gate
+
+on:
+  pull_request:
+    paths:
+      - "06-lab-complete/benchmark-observability/develop/**"
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 06-lab-complete/benchmark-observability/develop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - name: Start agent v2
+        run: |
+          AGENT_VERSION=v2 PORT=8002 MOCK_ERROR_RATE=0 python app.py &
+          for i in $(seq 1 30); do curl -sf localhost:8002/health && break; sleep 1; done
+      - name: Quality gate (exit code != 0 → chặn merge)
+        run: |
+          python eval/run_eval.py --url http://localhost:8002 \
+            --min-accuracy 1.0 --baseline reports/eval_v2_fixed.json \
+            --out reports/eval_ci.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-report
+          path: 06-lab-complete/benchmark-observability/develop/reports/eval_ci.json

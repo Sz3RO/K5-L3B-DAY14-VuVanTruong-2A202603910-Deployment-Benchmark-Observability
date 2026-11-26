@@ -70,6 +70,6 @@ python check_production_ready.py --public-url https://day14-production-agent-b6l
 | `LOG_LEVEL` | không đặt → mặc định `INFO` |
 
 ## Screenshots
-- [Deployment dashboard](screenshots/dashboard.png)
-- [Service running](screenshots/running.png)
-- [Test results](screenshots/test.png)
+- [Deployment dashboard](screenshots/dashboard.png) — Render Dashboard: service `Live`, Blueprint managed, 3 deploy thành công
+- [Service running](screenshots/running.png) — trạng thái lấy qua Render API (deploy LIVE, Redis available, log JSON của app) + `/health`, `/ready` gọi từ URL public
+- [Test results](screenshots/test.png) — 4 lệnh tự kiểm CP6 trên URL public: 200 / 200 / 401 / 200 (key đã che)
